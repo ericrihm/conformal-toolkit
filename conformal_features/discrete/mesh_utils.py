@@ -1,6 +1,5 @@
 """Core mesh utilities: cotangent Laplacian, vertex areas, edge extraction."""
 import torch
-import math
 
 
 def get_edges(faces):
