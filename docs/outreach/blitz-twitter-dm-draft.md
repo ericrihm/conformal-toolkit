@@ -1,0 +1,1 @@
+Hi Sam -- I built a SageMath toolkit that computes your conformal hypersurface invariant classification (L_1, L_2, Willmore densities, invariant enumeration by weight). First implementation of this as software, as far as I know. Would love to discuss collaboration -- repo here: https://github.com/ericrihm/conformal-toolkit (notebook 02 walks through your classification directly).
