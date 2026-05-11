@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.backends._legacy:_Backend"
+
+[project]
+name = "conformal-toolkit"
+version = "0.1.0"
+description = "Computational conformal geometry and conformal invariants for geometric deep learning"
+license = "MIT"
+requires-python = ">=3.10"
+authors = [{ name = "Eric Rihm", email = "admin@strata-networks.com" }]
+dependencies = ["numpy>=1.24"]
+
+[project.optional-dependencies]
+ml = ["torch>=2.0", "scipy>=1.11", "robust-laplacian>=0.2"]
+benchmarks = ["torch>=2.0", "scipy>=1.11", "robust-laplacian>=0.2", "trimesh>=4.0"]
+dev = ["pytest>=7.0", "jupyter>=1.0"]
+
+[tool.setuptools.packages.find]
+include = ["conformal_toolkit*", "conformal_features*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
