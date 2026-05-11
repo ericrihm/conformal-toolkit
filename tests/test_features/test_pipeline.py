@@ -1,3 +1,4 @@
+import pytest
 import torch
 from tests.conftest_mesh import _make_icosphere
 from conformal_features.features.pipeline import mesh_conformal_features
@@ -33,3 +34,20 @@ def test_pipeline_rotation_invariance():
 
     diff = (feats_before - feats_after).abs().max()
     assert diff < 1e-4, f"Features not rotation-invariant: max diff = {diff}"
+
+
+def test_pipeline_rejects_numpy():
+    """Should raise TypeError for numpy arrays."""
+    import numpy as np
+    v = np.random.randn(100, 3)
+    f = np.random.randint(0, 100, (200, 3))
+    with pytest.raises(TypeError, match="torch.Tensor"):
+        mesh_conformal_features(v, f)
+
+
+def test_pipeline_rejects_wrong_shape():
+    """Should raise ValueError for wrong tensor shapes."""
+    v = torch.randn(100, 2)  # wrong: should be (V, 3)
+    f = torch.randint(0, 100, (200, 3))
+    with pytest.raises(ValueError, match="shape"):
+        mesh_conformal_features(v, f)

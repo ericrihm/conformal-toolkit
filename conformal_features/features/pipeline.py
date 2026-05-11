@@ -26,13 +26,28 @@ def mesh_conformal_features(vertices, faces, include_isometry=True):
         9: H^2 - K (alternative Willmore density)
 
     Args:
-        vertices: (V, 3) Tensor
-        faces: (F, 3) LongTensor
+        vertices: (V, 3) float Tensor
+        faces: (F, 3) long Tensor
         include_isometry: include isometry-invariant features for ablation
 
     Returns:
-        features: (V, D) Tensor
+        features: (V, D) Tensor where D=10 (or 7 if include_isometry=False)
+
+    Raises:
+        TypeError: if inputs are not torch Tensors
+        ValueError: if tensor shapes are wrong
     """
+    if not isinstance(vertices, torch.Tensor):
+        raise TypeError(f"vertices must be a torch.Tensor, got {type(vertices).__name__}")
+    if not isinstance(faces, torch.Tensor):
+        raise TypeError(f"faces must be a torch.Tensor, got {type(faces).__name__}")
+    if vertices.ndim != 2 or vertices.shape[1] != 3:
+        raise ValueError(f"vertices must have shape (V, 3), got {tuple(vertices.shape)}")
+    if faces.ndim != 2 or faces.shape[1] != 3:
+        raise ValueError(f"faces must have shape (F, 3), got {tuple(faces.shape)}")
+    if not faces.dtype == torch.long:
+        faces = faces.long()
+
     cf = discrete_conformal_factor(vertices, faces)
     wd = discrete_willmore_density(vertices, faces)
     q2 = discrete_q_curvature(vertices, faces, order=2)
