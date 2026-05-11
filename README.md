@@ -203,10 +203,10 @@ conformal-toolkit/
 │   ├── poincare_einstein/      # Fefferman-Graham, holographic data
 │   └── export/                 # tensor_to_numpy, tensor_to_torch
 ├── conformal_features/         # PyTorch discrete package
-│   ├── discrete/               # Curvature, Q, Bach, Willmore, cross-ratios, Yamabe
+│   ├── discrete/               # Curvature, Q, Bach, Willmore, cross-ratios, Yamabe, spectral
 │   ├── features/               # mesh_conformal_features() pipeline
 │   └── benchmarks/             # ShapeNet, SHREC, FAUST evaluation
-├── tests/                      # 125 tests across both packages
+├── tests/                      # 157 tests across both packages
 ├── examples/                   # 6 Jupyter notebooks
 └── paper.md                    # JOSS paper draft
 ```
@@ -223,7 +223,8 @@ conformal-toolkit/
 | | `.schouten()` | Schouten tensor P_ab |
 | | `.bach()` | Bach tensor B_ab |
 | | `.q_curvature(order)` | Q-curvature (Q₂ or Q₄) |
-| | `.gjms_operator(f, order)` | GJMS operator (Laplacian or Paneitz) |
+| | `.gjms_operator(f, order)` | GJMS operator (P₂, P₄, or P₆) |
+| | `.obstruction_tensor()` | Fefferman-Graham obstruction (n=4,6) |
 | | `.under_rescaling(omega)` | New structure for e^{2ω}g |
 | `tractor` | `StandardTractor(cs, σ, μ, ρ)` | Section of the rank-(n+2) tractor bundle |
 | | `thomas_d(cs, f, weight)` | Thomas D-operator: density → tractor |
@@ -249,6 +250,9 @@ conformal-toolkit/
 | `discrete_conformal_factor(V, F)` | Mesh | Conformal factor via Yamabe flow |
 | `discrete_cross_ratios(V, F)` | Mesh | Möbius-invariant edge cross-ratios |
 | `cotangent_laplacian(V, F)` | Mesh | Sparse (V,V) cotangent weight matrix |
+| `lbo_eigenvectors(V, F, k)` | Mesh | First k LBO eigenvalues + eigenvectors |
+| `heat_kernel_signature(V, F, k)` | Mesh | HKS descriptors (V, T) |
+| `wave_kernel_signature(V, F, k)` | Mesh | WKS descriptors (V, E) |
 
 ---
 
