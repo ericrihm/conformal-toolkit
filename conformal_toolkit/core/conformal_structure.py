@@ -67,3 +67,13 @@ class ConformalStructure:
     def gjms_operator(self, f, order=4):
         from conformal_toolkit.core.gjms import gjms_operator
         return gjms_operator(self, f, order=order)
+
+    def obstruction_tensor(self):
+        from conformal_toolkit.core.obstruction import compute_obstruction
+        return compute_obstruction(self)
+
+    def under_rescaling(self, omega):
+        """Return a new ConformalStructure for g_hat = e^{2*omega} * g."""
+        from sage.all import exp
+        g_hat = exp(2 * omega) * self._g
+        return ConformalStructure(g_hat)
