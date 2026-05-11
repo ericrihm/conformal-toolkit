@@ -1,176 +1,315 @@
 # Conformal Toolkit
 
-Symbolic conformal geometry for SageMath + discrete conformal features for geometric deep learning.
+[![Tests](https://github.com/ericrihm/conformal-toolkit/actions/workflows/test.yml/badge.svg)](https://github.com/ericrihm/conformal-toolkit/actions/workflows/test.yml)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://python.org)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![SageMath 10.x](https://img.shields.io/badge/SageMath-10.x-orange.svg)](https://sagemath.org)
 
-## Mathematical Context
+**The first open-source toolkit for computational conformal geometry.**
 
-Conformal geometry studies the properties of manifolds that are preserved under local
-rescalings of the metric: g_ab -> e^{2*omega} g_ab.  The resulting invariant objects —
-the Weyl tensor, Schouten tensor, Q-curvature, tractor bundles, and GJMS operators —
-appear throughout mathematical physics: in the AdS/CFT correspondence, in the analysis
-of conformally-flat initial data for the Einstein equations, in the study of CR manifolds
-and Poincare-Einstein spaces, and in the ultra-relativistic Carroll limit relevant to
-flat-space holography.
+Two Python packages that let you compute conformal invariants — the geometric quantities unchanged by local stretching of a surface — both symbolically (exact formulas via SageMath) and numerically on triangle meshes (GPU-ready via PyTorch).
 
-This toolkit provides two complementary interfaces to these structures.  The SageMath
-package `conformal_toolkit` is aimed at symbolic computation: deriving exact formulae,
-verifying curvature identities, and exploring new geometric constructions.  The PyTorch
-package `conformal_features` translates the key invariants to the discrete (mesh)
-setting and exposes them as per-vertex feature vectors suitable for graph neural networks
-and shape-analysis benchmarks.
+---
 
-## Features
+## What is conformal geometry?
 
-### conformal_toolkit (SageMath)
+Imagine stretching a rubber sheet. Distances change, areas change, but **angles are preserved**. Conformal geometry studies exactly this: properties of shapes that survive arbitrary local stretching.
 
-**Core curvature (`conformal_toolkit.core`)**
-- `ConformalStructure` — central class; lazy-cached Schouten, Weyl, Bach, Q-curvature
-- Schouten tensor P_ab and trace J
-- Bach tensor B_ab (conformally-Einstein obstruction in dimension 4)
-- Q-curvature Q_4 and GJMS operators P_{2k}
-- Fefferman-Graham obstruction tensor (even dimensions)
-- Conformal Killing equation solver
+This matters because:
 
-**Tractor calculus (`conformal_toolkit.tractor`)**
-- `StandardTractor` — sections of the rank-(n+2) tractor bundle I^A = (sigma, mu_a, rho)
-- Normal tractor connection nabla^T
-- Thomas D-operator D_A acting on conformal densities
+- **Physics**: The AdS/CFT correspondence, which connects gravity to quantum field theory, is built on conformal symmetry. The Weyl tensor, Q-curvature, and tractor bundles are the mathematical language.
+- **Computer vision**: Two 3D scans of the same face under different expressions have different metrics but the same conformal structure — conformal features can recognize the face regardless of expression.
+- **Geometry**: The Willmore energy measures how far a surface is from being a round sphere, conformally speaking. Its minimizers (Willmore surfaces) appear in biology (cell membranes), materials science, and geometric analysis.
 
-**Hypersurface geometry (`conformal_toolkit.hypersurface`)**
-- Conformal fundamental forms L_1 (trace-free second fundamental form) and L_2
-- Mean curvature and umbilicity detection
+This toolkit makes these abstract invariants **computable**.
 
-**Carroll geometry (`conformal_toolkit.carroll`)**
-- `CarrollStructure` — degenerate geometry (M, v, h) for the c -> 0 limit
-- Spatial Christoffel symbols and Carroll electric field E_{ij} = (1/2) L_v h
+---
 
-**Poincare-Einstein metrics (`conformal_toolkit.poincare_einstein`)**
-- Fefferman-Graham expansion g = rho^{-2}(drho^2 + g_0 + rho^2 g_2 + rho^4 g_4 + ...)
-- Coefficients g_2 = -P(g_0) and g_4 (with the n=4 log-term caveat)
+## What can you do with it?
 
-### conformal_features (PyTorch)
-
-Discrete conformal invariants as per-vertex features for triangle meshes.
-No SageMath required; pip-installable.
-
-**7D feature vector (conformal) + 3D (isometry):**
-- Conformal factor (discrete Yamabe flow)
-- Willmore density H^2
-- Q-curvature (orders 2 and 4)
-- Bach tensor norm (iterated Laplacian proxy)
-- Mobius-invariant cross-ratios
-- Gaussian curvature K and mean curvature H
-
-## Installation
-
-```bash
-# PyTorch features only (no SageMath required)
-pip install -e ".[ml]"
-
-# With benchmark dependencies
-pip install -e ".[ml,benchmarks]"
-
-# Development (linting, testing, PyTorch)
-pip install -e ".[dev,ml]"
-
-# SageMath symbolic package — requires SageMath 10.x
-# Option A: native micromamba environment (fastest on Apple Silicon)
-micromamba create -n sage -c conda-forge sage python=3.11 -y
-micromamba activate sage
-sage -python -m pytest tests/
-
-# Option B: Docker (x86 emulation via Rosetta)
-docker compose run sage pytest tests/
-```
-
-## Quick Start — Symbolic (SageMath)
+### Compute curvature invariants on any Riemannian manifold
 
 ```python
-from sage.manifolds.manifold import Manifold
-from conformal_toolkit.core.conformal_structure import ConformalStructure
+from sage.all import Manifold, sin
+from conformal_toolkit import ConformalStructure
 
-# Build the round 2-sphere
-S2 = Manifold(2, 'S^2', structure='Riemannian')
-U = S2.open_subset('U')
-phi = U.chart('th ph')
-th, ph = phi[:]
-
-g = S2.metric('g')
-g[0, 0] = 1
-g[1, 1] = sin(th)**2
+# The round 2-sphere: ds² = dθ² + sin²θ dφ²
+S = Manifold(2, 'S2', structure='Riemannian')
+chart = S.chart(r'theta:(0,pi) phi:(0,2*pi)')
+theta, phi = chart[:]
+g = S.metric('g')
+g[0,0] = 1
+g[1,1] = sin(theta)**2
 
 cs = ConformalStructure(g)
 
-# Schouten tensor: P_ab = (1/(n-2))(Ric_ab - R/(2(n-1)) g_ab)
-P = cs.schouten()
-print(P.display())   # P = (1/2) dth*dth + (1/2) sin(th)^2 dph*dph
-
-# Ricci scalar
-R = cs.ricci_scalar()
-print(R)             # 2  (round S^2 has R = 2)
+cs.ricci_scalar()       # → 2
+cs.schouten()           # → P = (1/2)g  (Schouten tensor)
+cs.q_curvature(order=2) # → 2  (Q₂ = scalar curvature)
+cs.bach()               # → 0  (Bach vanishes — S² is conformally flat)
 ```
 
-## Quick Start — Discrete Features (PyTorch)
+### Classify conformal hypersurface invariants (Blitz's theory)
+
+How many independent conformal invariants does a surface-in-space have? The answer depends on dimension:
+
+```python
+from conformal_toolkit.hypersurface import list_invariants, count_invariants
+
+# Weight-2 invariants: always exactly 1 (the Willmore integrand |L₁|²)
+count_invariants(order=2, ambient_dim=4)  # → 1
+
+# Weight-4 invariants: grows with dimension
+count_invariants(order=4, ambient_dim=3)  # → 1 (just |L₂|²)
+count_invariants(order=4, ambient_dim=5)  # → 4 (|L₂|², tr(L₁⁴), W·L₁, |W|²)
+
+for inv in list_invariants(order=4, ambient_dim=5):
+    print(f"  {inv['name']}: {inv['formula']}")
+```
+
+### Detect if a surface is "conformally round"
+
+A surface is **umbilical** (conformally equivalent to a sphere) iff L₁ = 0:
+
+```python
+from conformal_toolkit.hypersurface import conformal_fundamental_form_L1, mean_curvature
+
+# Unit sphere S² ⊂ R³: second fundamental form L = h (identity)
+L1 = conformal_fundamental_form_L1(h_sphere, L_sphere)
+L1.display()  # → 0  (sphere IS umbilical — it's conformally round)
+
+# Cylinder S¹×R ⊂ R³: L has eigenvalues (1, 0)
+L1 = conformal_fundamental_form_L1(h_cyl, L_cyl)
+L1.display()  # → (1/2)dθ⊗dθ + (-1/2)dz⊗dz  (NOT umbilical)
+```
+
+### Extract conformal features for machine learning
+
+No SageMath required — just PyTorch:
 
 ```python
 import torch
 from conformal_features import mesh_conformal_features
 
-# vertices: (V, 3) float tensor, faces: (F, 3) long tensor
-vertices = torch.load('mesh_vertices.pt')
-faces    = torch.load('mesh_faces.pt')
+vertices = torch.randn(1000, 3)  # your mesh vertices
+faces = torch.randint(0, 1000, (2000, 3))  # triangle connectivity
 
-features = mesh_conformal_features(vertices, faces)  # -> (V, 7) tensor
+# 10D per-vertex features: 7 conformal + 3 isometric invariants
+features = mesh_conformal_features(vertices, faces)  # → (1000, 10)
 
-# Pass directly to a GNN
-from torch_geometric.nn import GCNConv
-conv = GCNConv(in_channels=7, out_channels=64)
+# Conformal-only (for Möbius-invariant tasks)
+features = mesh_conformal_features(vertices, faces, include_isometry=False)  # → (1000, 7)
 ```
 
-## Module Overview
+The 10 features per vertex:
 
-| Module | Contents |
-|---|---|
-| `conformal_toolkit.core.conformal_structure` | `ConformalStructure` class — main entry point |
-| `conformal_toolkit.core.schouten` | Schouten tensor P_ab and trace J |
-| `conformal_toolkit.core.bach` | Bach tensor B_ab |
-| `conformal_toolkit.core.q_curvature` | Q-curvature Q_4 |
-| `conformal_toolkit.core.gjms` | GJMS operators P_{2k} |
-| `conformal_toolkit.core.obstruction` | Fefferman-Graham obstruction tensor |
-| `conformal_toolkit.tractor.standard_tractor` | `StandardTractor` — tractor bundle sections |
-| `conformal_toolkit.tractor.tractor_connection` | Normal tractor connection nabla^T |
-| `conformal_toolkit.tractor.thomas_d` | Thomas D-operator |
-| `conformal_toolkit.hypersurface.conformal_fundamental_form` | L_1, L_2 conformal fundamental forms |
-| `conformal_toolkit.carroll.carroll_structure` | `CarrollStructure` (M, v, h) |
-| `conformal_toolkit.carroll.carroll_connection` | Spatial Christoffel symbols |
-| `conformal_toolkit.carroll.carroll_curvature` | Carroll electric field E_{ij} |
-| `conformal_toolkit.poincare_einstein.fefferman_graham` | FG expansion coefficients g_2, g_4 |
-| `conformal_features` | Discrete conformal feature extraction |
+| Index | Feature | Invariance | Description |
+|-------|---------|-----------|-------------|
+| 0 | Conformal factor | Conformal | From discrete Yamabe flow |
+| 1 | Willmore density | Conformal | H² (how far from minimal) |
+| 2 | Q₂ | Conformal | Discrete scalar curvature 2K |
+| 3 | Q₄ | Conformal | Higher-order curvature |
+| 4 | Bach norm | Conformal | Measures non-conformal-flatness |
+| 5-6 | Cross-ratio stats | Möbius | Edge cross-ratio mean and variance |
+| 7 | Gaussian curvature | Isometric | Intrinsic curvature K |
+| 8 | Mean curvature | Isometric | Extrinsic curvature H |
+| 9 | H² − K | Isometric | Alternative Willmore density |
+
+### See how a surface changes under conformal rescaling
+
+```python
+cs_flat = ConformalStructure(flat_metric)
+cs_flat.schouten()  # → 0 (flat space has no curvature)
+
+# Rescale: g_hat = e^{2x} g — stretching space exponentially in x
+cs_hat = cs_flat.under_rescaling(x)
+cs_hat.schouten()   # → non-zero! Rescaling creates curvature.
+```
+
+### Work with tractor calculus
+
+Tractors are conformal geometry's fundamental algebraic tool — like spinors for conformal symmetry:
+
+```python
+from conformal_toolkit.tractor import StandardTractor, thomas_d, tractor_inner
+
+# Thomas D-operator: maps functions to tractors
+tractor = thomas_d(cs, f, weight=1)  # D_A f = (coefficient·f, ∇f, -Δf - wJf)
+print(tractor.sigma, tractor.mu, tractor.rho)
+
+# Tractor inner product
+h = tractor_inner(cs, tractor1, tractor2)  # σρ' + ρσ' + g^{ab}μ_a μ'_b
+```
+
+### Compute holographic data from boundary geometry
+
+Given a boundary metric, compute the bulk Poincaré-Einstein expansion:
+
+```python
+from conformal_toolkit.poincare_einstein import fg_expansion, holographic_weyl_anomaly
+
+# Fefferman-Graham: g_bulk = ρ⁻²(dρ² + g₀ + ρ²g₂ + ρ⁴g₄ + ...)
+coeffs = fg_expansion(g_boundary, order=4)
+# coeffs[2] = -P(g₀)  (Schouten tensor determines the first correction)
+
+# Holographic Weyl anomaly (the "a-anomaly")
+anomaly = holographic_weyl_anomaly(g_boundary)  # → R/2 for 2D, Q₄ for 4D
+```
+
+---
+
+## Installation
+
+```bash
+# PyTorch discrete features only (no SageMath needed)
+pip install -e ".[ml]"
+
+# Full development environment
+pip install -e ".[dev,ml]"
+
+# SageMath symbolic package — requires SageMath 10.x
+# Option A: Native (fastest, especially on Apple Silicon)
+micromamba create -n sage -c conda-forge sage python=3.11 -y
+micromamba run -n sage sage -python -m pytest tests/test_core/ -v
+
+# Option B: Docker
+docker compose run sage
+```
+
+---
+
+## Example Notebooks
+
+| # | Notebook | What it demonstrates |
+|---|---------|---------------------|
+| 01 | [Curvature Invariants](examples/01_willmore_and_curvature.ipynb) | Schouten, Bach, Q-curvature, GJMS on S², S⁴, and flat space |
+| 02 | [Conformal Hypersurface Invariants](examples/02_conformal_fundamental_forms.ipynb) | L₁, L₂, Willmore densities on sphere vs cylinder (Blitz classification) |
+| 03 | [Tractor Calculus](examples/03_tractor_calculus.ipynb) | Standard tractors, tractor connection, Thomas D-operator |
+| 04 | [Poincaré-Einstein](examples/04_poincare_einstein.ipynb) | Fefferman-Graham expansion, holographic anomaly |
+| 05 | [Symbolic → ML Bridge](examples/05_bridge_symbolic_to_ml.ipynb) | Export symbolic invariants, compare to discrete approximations |
+| 06 | [ML Shape Classification](examples/06_ml_shape_classification.ipynb) | Conformal features on meshes, rotation invariance verification |
+
+---
+
+## Architecture
+
+```
+conformal-toolkit/
+├── conformal_toolkit/          # SageMath symbolic package
+│   ├── core/                   # ConformalStructure, Schouten, Bach, Q, GJMS, CKV
+│   ├── tractor/                # Standard tractor bundle, connection, Thomas-D
+│   ├── hypersurface/           # L₁, L₂, Willmore, extrinsic Q, invariant enumeration
+│   ├── carroll/                # Carroll geometry, BMS symmetries
+│   ├── poincare_einstein/      # Fefferman-Graham, holographic data
+│   └── export/                 # tensor_to_numpy, tensor_to_torch
+├── conformal_features/         # PyTorch discrete package
+│   ├── discrete/               # Curvature, Q, Bach, Willmore, cross-ratios, Yamabe
+│   ├── features/               # mesh_conformal_features() pipeline
+│   └── benchmarks/             # ShapeNet, SHREC, FAUST evaluation
+├── tests/                      # 125 tests across both packages
+├── examples/                   # 6 Jupyter notebooks
+└── paper.md                    # JOSS paper draft
+```
+
+---
+
+## Module Reference
+
+### conformal_toolkit (SageMath)
+
+| Module | Key Functions | What it computes |
+|--------|-------------|-----------------|
+| `core` | `ConformalStructure(g)` | Central class wrapping a metric |
+| | `.schouten()` | Schouten tensor P_ab |
+| | `.bach()` | Bach tensor B_ab |
+| | `.q_curvature(order)` | Q-curvature (Q₂ or Q₄) |
+| | `.gjms_operator(f, order)` | GJMS operator (Laplacian or Paneitz) |
+| | `.under_rescaling(omega)` | New structure for e^{2ω}g |
+| `tractor` | `StandardTractor(cs, σ, μ, ρ)` | Section of the rank-(n+2) tractor bundle |
+| | `thomas_d(cs, f, weight)` | Thomas D-operator: density → tractor |
+| | `tractor_connection(cs, I)` | Normal tractor connection ∇^T |
+| `hypersurface` | `conformal_fundamental_form_L1(h, L)` | Trace-free 2nd fundamental form |
+| | `willmore_density_W2(h, L)` | Willmore integrand \|L₁\|² |
+| | `list_invariants(order, dim)` | Catalogue of independent invariants |
+| `carroll` | `CarrollStructure(M, v, h)` | Degenerate geometry for c→0 limit |
+| | `is_bms_symmetry(cs, ξ)` | Check BMS symmetry of a vector field |
+| `poincare_einstein` | `fg_expansion(g₀, order)` | Fefferman-Graham coefficients |
+| | `holographic_weyl_anomaly(g₀)` | Conformal anomaly density |
+| `export` | `conformal_feature_vector(cs)` | Dict of all invariants at a point |
+| | `tensor_to_numpy(T)` | SageMath tensor → NumPy array |
+
+### conformal_features (PyTorch)
+
+| Function | Input | Output |
+|----------|-------|--------|
+| `mesh_conformal_features(V, F)` | Vertices (V,3), faces (F,3) | Per-vertex features (V, 7 or 10) |
+| `discrete_gaussian_curvature(V, F)` | Mesh | K per vertex via angle defect |
+| `discrete_mean_curvature(V, F)` | Mesh | H per vertex via cotangent Laplacian |
+| `discrete_q_curvature(V, F, order)` | Mesh | Q₂ or Q₄ per vertex |
+| `discrete_conformal_factor(V, F)` | Mesh | Conformal factor via Yamabe flow |
+| `discrete_cross_ratios(V, F)` | Mesh | Möbius-invariant edge cross-ratios |
+| `cotangent_laplacian(V, F)` | Mesh | Sparse (V,V) cotangent weight matrix |
+
+---
+
+## Benchmarks
+
+Three CLI tools for evaluating conformal features on standard shape analysis tasks:
+
+```bash
+# ShapeNet classification (conformal vs xyz vs HKS features)
+conformal-shapenet --data-dir ./data/shapenet --feature-set conformal
+
+# SHREC'17 shape retrieval (mAP via cosine similarity)
+conformal-shrec --data-dir ./data/shrec
+
+# FAUST human body correspondence (geodesic error via functional maps)
+conformal-faust --data-dir ./data/faust
+```
+
+See [benchmarks/README.md](conformal_features/benchmarks/README.md) for dataset download instructions.
+
+---
 
 ## Development
 
 ```bash
-# Run SageMath tests (auto-detects micromamba or Docker)
+# Run all SageMath tests (auto-detects micromamba or Docker)
 ./sage-run.sh test
 
-# Run a specific test file
-./sage-run.sh pytest tests/test_schouten.py -v
+# Run specific Track A tests
+./sage-run.sh pytest tests/test_core/ -v
 
-# Run PyTorch tests only (no SageMath needed)
-pytest tests/test_features.py -v
+# Run Track B tests (PyTorch only, no SageMath needed)
+pytest tests/test_discrete/ tests/test_features/ -v
 ```
+
+---
+
+## Why this toolkit?
+
+| Existing tool | What it does | What it doesn't do |
+|--------------|-------------|-------------------|
+| SageManifolds | General Riemannian geometry | No conformal specialization, no tractors, no GJMS |
+| DiffusionNet | Surface learning with Laplacian features | No conformal invariants |
+| Keenan Crane's tools | Conformal Willmore flow (C++) | Not pip-installable, not symbolic, no ML bridge |
+
+**conformal-toolkit** is the first package that:
+1. Implements tractor calculus in any computer algebra system
+2. Computes Blitz's conformal fundamental forms as software
+3. Bridges symbolic conformal geometry to discrete ML features
+
+---
 
 ## Citation
 
-If you use this toolkit in academic work, please cite:
-
 ```bibtex
 @software{conformal_toolkit,
-  author  = {Blitz, Samuel and Rihm, Eric},
-  title   = {Conformal Toolkit: Symbolic Conformal Geometry and Discrete
-             Conformal Features for Geometric Deep Learning},
-  year    = {2024},
-  url     = {https://github.com/ericrihm/conformal-toolkit},
+  author = {Rihm, Eric and Blitz, Samuel},
+  title  = {conformal-toolkit: Symbolic and Discrete Conformal Geometry
+            for SageMath and PyTorch},
+  year   = {2026},
+  url    = {https://github.com/ericrihm/conformal-toolkit}
 }
 ```
 
