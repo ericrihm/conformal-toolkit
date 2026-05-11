@@ -1,0 +1,20 @@
+services:
+  sage:
+    image: sagemath/sagemath:10.4
+    platform: linux/amd64
+    volumes:
+      - .:/home/sage/conformal-toolkit
+    working_dir: /home/sage/conformal-toolkit
+    command: sage -python -m pytest tests/ -v
+    environment:
+      - SAGE_NUM_THREADS=4
+
+  sage-shell:
+    image: sagemath/sagemath:10.4
+    platform: linux/amd64
+    volumes:
+      - .:/home/sage/conformal-toolkit
+    working_dir: /home/sage/conformal-toolkit
+    command: sage --python3
+    stdin_open: true
+    tty: true
