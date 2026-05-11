@@ -10,12 +10,13 @@ discrete_gaussian_curvature already normalizes K = angle_defect / area, the
 raw bi-Laplacian (no additional area weighting) gives values that are small on
 a smooth, nearly-uniform sphere and converge to zero under mesh refinement.
 """
+from __future__ import annotations
 import torch
 from conformal_features.discrete.curvature import discrete_gaussian_curvature
 from conformal_features.discrete.mesh_utils import cotangent_laplacian
 
 
-def discrete_bach_norm(vertices, faces):
+def discrete_bach_norm(vertices: torch.Tensor, faces: torch.Tensor) -> torch.Tensor:
     """Per-vertex discrete Bach tensor norm approximation.
 
     Computes |L @ L @ K| where K is the discrete Gaussian curvature and L is

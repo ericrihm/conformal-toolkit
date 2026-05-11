@@ -13,6 +13,11 @@ from conformal_features.discrete.q_curvature import discrete_q_curvature
 from conformal_features.discrete.cross_ratios import discrete_cross_ratios
 from conformal_features.discrete.conformal_factor import discrete_conformal_factor
 from conformal_features.discrete.bach import discrete_bach_norm
+from conformal_features.discrete.spectral import (
+    lbo_eigenvectors,
+    heat_kernel_signature,
+    wave_kernel_signature,
+)
 
 __all__ = [
     "cotangent_laplacian", "vertex_areas", "get_edges", "face_angles",
@@ -20,4 +25,5 @@ __all__ = [
     "discrete_willmore_density", "discrete_q_curvature",
     "discrete_cross_ratios", "discrete_conformal_factor",
     "discrete_bach_norm",
+    "lbo_eigenvectors", "heat_kernel_signature", "wave_kernel_signature",
 ]

@@ -1,4 +1,5 @@
 """Discrete Q-curvature approximations."""
+from __future__ import annotations
 import torch
 from conformal_features.discrete.curvature import (
     discrete_gaussian_curvature,
@@ -7,7 +8,7 @@ from conformal_features.discrete.curvature import (
 from conformal_features.discrete.mesh_utils import cotangent_laplacian, vertex_areas
 
 
-def discrete_q_curvature(vertices, faces, order=2):
+def discrete_q_curvature(vertices: torch.Tensor, faces: torch.Tensor, order: int = 2) -> torch.Tensor:
     """Discrete Q-curvature of the given order.
 
     Q_2 = R = 2K (scalar curvature = 2 * Gaussian curvature for surfaces)

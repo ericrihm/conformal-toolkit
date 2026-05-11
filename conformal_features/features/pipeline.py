@@ -1,4 +1,5 @@
 """Feature extraction pipeline: mesh -> per-vertex conformal invariants."""
+from __future__ import annotations
 import torch
 from conformal_features.discrete.conformal_factor import discrete_conformal_factor
 from conformal_features.discrete.willmore import discrete_willmore_density
@@ -8,7 +9,7 @@ from conformal_features.discrete.bach import discrete_bach_norm
 from conformal_features.discrete.curvature import discrete_gaussian_curvature, discrete_mean_curvature
 
 
-def mesh_conformal_features(vertices, faces, include_isometry=True):
+def mesh_conformal_features(vertices: torch.Tensor, faces: torch.Tensor, include_isometry: bool = True) -> torch.Tensor:
     """Extract per-vertex conformal invariant features.
 
     Conformal features (7D, always included):

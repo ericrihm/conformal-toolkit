@@ -56,3 +56,36 @@ def test_obstruction_2d_raises():
     cs = ConformalStructure(data['metric'])
     with pytest.raises(ValueError, match="dimension >= 4"):
         cs.obstruction_tensor()
+
+
+# ---------- 6D obstruction tensor tests ----------
+
+def test_obstruction_6d_flat_vanishes():
+    """Obstruction tensor should vanish on flat R^6."""
+    data = _make_flat_rn(6)
+    cs = ConformalStructure(data['metric'])
+    O = cs.obstruction_tensor()
+    frame = list(data['manifold'].frames())[0]
+    for a in range(6):
+        for b in range(6):
+            comp = O[frame, a, b]
+            if hasattr(comp, 'expr'):
+                comp = comp.expr()
+            assert comp == 0, f"O[{a},{b}] should vanish on flat R^6, got {comp}"
+
+
+def test_obstruction_6d_is_not_notimplemented():
+    """compute_obstruction should no longer raise NotImplementedError for n=6."""
+    data = _make_flat_rn(6)
+    cs = ConformalStructure(data['metric'])
+    # Should not raise
+    O = cs.obstruction_tensor()
+    assert O is not None
+
+
+def test_obstruction_8d_raises():
+    """Obstruction tensor in dimension 8 should still raise NotImplementedError."""
+    data = _make_flat_rn(8)
+    cs = ConformalStructure(data['metric'])
+    with pytest.raises(NotImplementedError, match="n=4 and n=6"):
+        cs.obstruction_tensor()

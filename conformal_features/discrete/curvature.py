@@ -1,10 +1,11 @@
 """Discrete Gaussian and mean curvature on triangle meshes."""
+from __future__ import annotations
 import torch
 import math
 from conformal_features.discrete.mesh_utils import vertex_areas, cotangent_laplacian, face_angles
 
 
-def discrete_gaussian_curvature(vertices, faces):
+def discrete_gaussian_curvature(vertices: torch.Tensor, faces: torch.Tensor) -> torch.Tensor:
     """Discrete Gaussian curvature via angle defect.
 
     K_i = (2*pi - sum of angles at vertex i) / A_i
@@ -30,7 +31,7 @@ def discrete_gaussian_curvature(vertices, faces):
     return K
 
 
-def discrete_mean_curvature(vertices, faces):
+def discrete_mean_curvature(vertices: torch.Tensor, faces: torch.Tensor) -> torch.Tensor:
     """Discrete mean curvature from cotangent Laplacian.
 
     H_i = |L @ v_i| / (2 * A_i)

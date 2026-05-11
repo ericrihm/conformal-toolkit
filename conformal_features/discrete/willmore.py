@@ -1,8 +1,10 @@
 """Discrete Willmore energy density."""
+from __future__ import annotations
+import torch
 from conformal_features.discrete.curvature import discrete_mean_curvature
 
 
-def discrete_willmore_density(vertices, faces):
+def discrete_willmore_density(vertices: torch.Tensor, faces: torch.Tensor) -> torch.Tensor:
     """Per-vertex Willmore energy density: W_i = H_i^2.
 
     Total Willmore energy: sum(W_i * A_i).

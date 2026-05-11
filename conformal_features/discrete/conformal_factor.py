@@ -3,12 +3,13 @@
 Finds u_i such that the conformally equivalent metric has constant curvature.
 Uses iterative curvature flow: u_i += lr * (K_target - K_i(u)).
 """
+from __future__ import annotations
 import torch
 import math
 from conformal_features.discrete.mesh_utils import get_edges, vertex_areas, face_angles
 
 
-def discrete_conformal_factor(vertices, faces, max_iter=500, lr=0.001, tol=1e-4):
+def discrete_conformal_factor(vertices: torch.Tensor, faces: torch.Tensor, max_iter: int = 500, lr: float = 0.001, tol: float = 1e-4) -> torch.Tensor:
     """Compute per-vertex log conformal factor via discrete Yamabe flow.
 
     Finds u such that the conformally equivalent discrete metric
@@ -52,51 +53,76 @@ def discrete_conformal_factor(vertices, faces, max_iter=500, lr=0.001, tol=1e-4)
     return u
 
 
-def _curvature_with_conformal_factor(vertices, faces, edges, base_lengths, u):
+def _curvature_with_conformal_factor(vertices: torch.Tensor, faces: torch.Tensor, edges: torch.Tensor, base_lengths: torch.Tensor, u: torch.Tensor) -> torch.Tensor:
     """Compute discrete Gaussian curvature with conformally scaled edge lengths.
 
     Scaled length: l'_ij = exp((u_i + u_j)/2) * l_ij
     Then compute angle defect with the new lengths.
+
+    Fully vectorized — no Python loops over edges or faces.
     """
     V = vertices.shape[0]
 
-    # Build edge length lookup
-    edge_key_to_length = {}
-    for idx in range(edges.shape[0]):
-        i, j = edges[idx, 0].item(), edges[idx, 1].item()
-        scale = torch.exp((u[i] + u[j]) / 2)
-        new_len = base_lengths[idx] * scale
-        edge_key_to_length[(min(i, j), max(i, j))] = new_len
+    # --- Step 1: Vectorized edge scaling ---
+    scale = torch.exp((u[edges[:, 0]] + u[edges[:, 1]]) / 2)
+    scaled_lengths = base_lengths * scale
 
-    # Compute angles from edge lengths using law of cosines
+    # --- Step 2: Build edge hash for O(1) lookup via searchsorted ---
+    # edges are sorted so edges[:,0] < edges[:,1], and torch.unique returns
+    # them in sorted order, so edge_hash is already sorted.
+    V_total = vertices.shape[0]
+    edge_hash = edges[:, 0].long() * V_total + edges[:, 1].long()
+
+    # --- Step 3: For each face, extract its 3 edge indices ---
+    v0, v1, v2 = faces[:, 0], faces[:, 1], faces[:, 2]
+
+    # Edge opposite vertex 0: (v1, v2), opposite vertex 1: (v0, v2), opposite vertex 2: (v0, v1)
+    # Sort each edge pair so smaller index comes first
+    e_a0 = torch.minimum(v1, v2)
+    e_a1 = torch.maximum(v1, v2)
+    e_b0 = torch.minimum(v0, v2)
+    e_b1 = torch.maximum(v0, v2)
+    e_c0 = torch.minimum(v0, v1)
+    e_c1 = torch.maximum(v0, v1)
+
+    hash_a = e_a0.long() * V_total + e_a1.long()  # edge opposite v0
+    hash_b = e_b0.long() * V_total + e_b1.long()  # edge opposite v1
+    hash_c = e_c0.long() * V_total + e_c1.long()  # edge opposite v2
+
+    idx_a = torch.searchsorted(edge_hash, hash_a)
+    idx_b = torch.searchsorted(edge_hash, hash_b)
+    idx_c = torch.searchsorted(edge_hash, hash_c)
+
+    a = scaled_lengths[idx_a]  # edge opposite v0
+    b = scaled_lengths[idx_b]  # edge opposite v1
+    c = scaled_lengths[idx_c]  # edge opposite v2
+
+    # --- Step 4: Vectorized law of cosines for all faces ---
+    a2, b2, c2 = a ** 2, b ** 2, c ** 2
+
+    cos_0 = (b2 + c2 - a2) / (2 * b * c).clamp(min=1e-12)
+    cos_1 = (a2 + c2 - b2) / (2 * a * c).clamp(min=1e-12)
+    cos_2 = (a2 + b2 - c2) / (2 * a * b).clamp(min=1e-12)
+
+    angle_0 = torch.acos(cos_0.clamp(-1 + 1e-7, 1 - 1e-7))
+    angle_1 = torch.acos(cos_1.clamp(-1 + 1e-7, 1 - 1e-7))
+    angle_2 = torch.acos(cos_2.clamp(-1 + 1e-7, 1 - 1e-7))
+
+    # --- Step 5: Heron's formula for face areas (vectorized) ---
+    s = (a + b + c) / 2
+    face_area = torch.sqrt((s * (s - a) * (s - b) * (s - c)).clamp(min=1e-20))
+
+    # --- Step 6: Accumulate via scatter_add_ ---
     angle_sum = torch.zeros(V, dtype=vertices.dtype)
+    angle_sum.scatter_add_(0, v0, angle_0)
+    angle_sum.scatter_add_(0, v1, angle_1)
+    angle_sum.scatter_add_(0, v2, angle_2)
+
+    area_third = face_area / 3
     area_sum = torch.zeros(V, dtype=vertices.dtype)
-
-    for f_idx in range(faces.shape[0]):
-        i, j, k = faces[f_idx, 0].item(), faces[f_idx, 1].item(), faces[f_idx, 2].item()
-        a = edge_key_to_length.get((min(j, k), max(j, k)), torch.tensor(1.0))  # opposite i
-        b = edge_key_to_length.get((min(i, k), max(i, k)), torch.tensor(1.0))  # opposite j
-        c = edge_key_to_length.get((min(i, j), max(i, j)), torch.tensor(1.0))  # opposite k
-
-        # Angle at i: cos(A) = (b^2 + c^2 - a^2) / (2bc)
-        cos_i = (b**2 + c**2 - a**2) / (2 * b * c).clamp(min=1e-12)
-        cos_j = (a**2 + c**2 - b**2) / (2 * a * c).clamp(min=1e-12)
-        cos_k = (a**2 + b**2 - c**2) / (2 * a * b).clamp(min=1e-12)
-
-        angle_i = torch.acos(cos_i.clamp(-1 + 1e-7, 1 - 1e-7))
-        angle_j = torch.acos(cos_j.clamp(-1 + 1e-7, 1 - 1e-7))
-        angle_k = torch.acos(cos_k.clamp(-1 + 1e-7, 1 - 1e-7))
-
-        # Heron's formula for area
-        s = (a + b + c) / 2
-        face_area = torch.sqrt((s * (s-a) * (s-b) * (s-c)).clamp(min=1e-20))
-
-        angle_sum[i] += angle_i
-        angle_sum[j] += angle_j
-        angle_sum[k] += angle_k
-        area_sum[i] += face_area / 3
-        area_sum[j] += face_area / 3
-        area_sum[k] += face_area / 3
+    area_sum.scatter_add_(0, v0, area_third)
+    area_sum.scatter_add_(0, v1, area_third)
+    area_sum.scatter_add_(0, v2, area_third)
 
     K = (2 * math.pi - angle_sum) / area_sum.clamp(min=1e-12)
     return K

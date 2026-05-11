@@ -1,8 +1,9 @@
 """Core mesh utilities: cotangent Laplacian, vertex areas, edge extraction."""
+from __future__ import annotations
 import torch
 
 
-def get_edges(faces):
+def get_edges(faces: torch.Tensor) -> torch.Tensor:
     """Extract unique undirected edges from face list.
 
     Args:
@@ -19,7 +20,7 @@ def get_edges(faces):
     return unique_edges
 
 
-def vertex_areas(vertices, faces):
+def vertex_areas(vertices: torch.Tensor, faces: torch.Tensor) -> torch.Tensor:
     """Barycentric vertex areas (face area / 3 distributed to each vertex).
 
     Args:
@@ -40,7 +41,7 @@ def vertex_areas(vertices, faces):
     return areas
 
 
-def cotangent_laplacian(vertices, faces):
+def cotangent_laplacian(vertices: torch.Tensor, faces: torch.Tensor) -> torch.Tensor:
     """Build the cotangent Laplacian as a sparse matrix.
 
     For edge (i,j) shared by triangles with opposite vertices k and l:
@@ -101,7 +102,7 @@ def cotangent_laplacian(vertices, faces):
     return L.coalesce()
 
 
-def face_angles(vertices, faces):
+def face_angles(vertices: torch.Tensor, faces: torch.Tensor) -> torch.Tensor:
     """Compute interior angles at each vertex of each face.
 
     Args:
