@@ -25,7 +25,7 @@ dependencies = ["numpy>=1.24"]
 
 [project.optional-dependencies]
 ml = ["torch>=2.0", "scipy>=1.11", "robust-laplacian>=0.2"]
-benchmarks = ["torch>=2.0", "scipy>=1.11", "robust-laplacian>=0.2"]
+benchmarks = ["conformal-toolkit[ml]"]
 dev = ["pytest>=7.0", "jupyter>=1.0"]
 
 [project.urls]

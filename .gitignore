@@ -7,3 +7,11 @@ build/
 .ipynb_checkpoints/
 .sage/
 .pytest_cache/
+.venv/
+.DS_Store
+*.so
+*.pth
+data/
+wandb/
+.mypy_cache/
+.ruff_cache/
