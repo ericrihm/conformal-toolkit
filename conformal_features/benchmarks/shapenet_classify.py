@@ -33,7 +33,7 @@ def extract_features(vertices, faces, feature_set):
         return mesh_conformal_features(vertices, faces, include_isometry=True)
 
     if feature_set == 'hks':
-        return _compute_hks(vertices, faces, scales=[16, 64, 256])
+        return _compute_hks(vertices, faces)
 
     raise ValueError(f"Unknown feature set: {feature_set}")
 
@@ -54,8 +54,9 @@ def _estimate_normals(vertices, faces):
 def _compute_hks(vertices, faces, scales=None):
     """Heat kernel signature at multiple scales."""
     from conformal_features.discrete.mesh_utils import cotangent_laplacian, vertex_areas
+    import math
     if scales is None:
-        scales = [16, 64, 256]
+        scales = [math.exp(i * 0.5) for i in range(16)]  # 16 log-spaced scales
 
     L = cotangent_laplacian(vertices, faces)
     A = vertex_areas(vertices, faces)

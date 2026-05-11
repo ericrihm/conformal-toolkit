@@ -6,7 +6,6 @@ Provides:
 """
 import torch
 import math
-import pytest
 
 
 def _make_icosphere(subdivisions=2):
@@ -91,11 +90,3 @@ def _make_flat_square(n=10):
 
     return vertices, torch.tensor(faces, dtype=torch.long)
 
-
-@pytest.fixture
-def icosphere():
-    return _make_icosphere(subdivisions=2)
-
-@pytest.fixture
-def flat_square():
-    return _make_flat_square(n=10)
