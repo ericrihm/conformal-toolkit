@@ -10,9 +10,15 @@ readme = "README.md"
 license = "MIT"
 requires-python = ">=3.10"
 authors = [{ name = "Eric Rihm", email = "admin@strata-networks.com" }]
+keywords = [
+    "conformal-geometry", "differential-geometry", "tractor-calculus",
+    "q-curvature", "gjms-operators", "willmore", "geometric-deep-learning",
+    "sagemath", "pytorch", "mesh-features",
+]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
     "Topic :: Scientific/Engineering :: Mathematics",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
     "Programming Language :: Python :: 3",
@@ -29,6 +35,8 @@ dev = ["pytest>=7.0", "jupyter>=1.0"]
 
 [project.urls]
 Repository = "https://github.com/ericrihm/conformal-toolkit"
+Issues = "https://github.com/ericrihm/conformal-toolkit/issues"
+Changelog = "https://github.com/ericrihm/conformal-toolkit/blob/main/CHANGELOG.md"
 
 [project.scripts]
 conformal-shapenet = "conformal_features.benchmarks.shapenet_classify:main"
