@@ -26,7 +26,12 @@ def laplacian_operator(cs, f):
     delta_f = laplacian(cs.connection(), cs.metric, f)
     if n == 2:
         return delta_f
-    return delta_f - ((n - 2) / (4 * (n - 1))) * R * f
+    # Order the arithmetic so the rational coefficient stays EXACT: dividing a
+    # Sage object (R * f) by the integer denominator avoids Python float
+    # division of (n-2)/(4(n-1)), which would contaminate the symbolic result
+    # (cs.dimension is a Python int). Cf. schouten.py, which derives n from
+    # g.domain().dim() (a Sage Integer) and is exact for the same reason.
+    return delta_f - (n - 2) * R * f / (4 * (n - 1))
 
 
 def paneitz_operator(cs, f):
@@ -47,8 +52,9 @@ def paneitz_operator(cs, f):
     term2 = divergence(nabla, g, V_df)
 
     Q4 = cs.q_curvature(order=4)
-    coeff = (n - 4) / 2
-    term3 = coeff * Q4 * f
+    # Exact rational arithmetic (see laplacian_operator): divide the Sage
+    # object by the integer 2 rather than forming the Python float (n-4)/2.
+    term3 = (n - 4) * Q4 * f / 2
 
     return delta2_f + term2 + term3
 

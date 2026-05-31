@@ -1,5 +1,22 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+- `tests/test_pe/test_critical_anchors.py`: SageMath regression anchors that
+  re-prove the audit's critical fixes on discriminating geometries — round S³
+  (Fefferman–Graham `g₄=1/16 g₀` (C1), renormalized volume `v₂=−3/4` (C2),
+  `Q₄=15/8`) and the non-Einstein product S²(1)×S²(2) (Schouten 7/24, −1/3;
+  `J=5/12`; conformal Laplacian `P₂(1)=−5/12` isolating the curvature term (M2);
+  `Bach≠0`). These run in the existing Track A SageMath CI. (167 tests total.)
+
+### Fixed
+- Symbolic curvature operators (`P₂`, Paneitz `P₄`, `Q₄`) formed rational
+  coefficients via Python float division on `cs.dimension` (a Python int),
+  contaminating results with floats (masked when the exact value is
+  binary-representable). Reordered so a Sage object is divided by the integer
+  denominator, keeping outputs exact (e.g. `P₂(1)=−5/12`, not `−0.41666…`).
+
 ## [0.1.1] - 2026-05-31
 
 ### Fixed (mathematical correctness audit)
