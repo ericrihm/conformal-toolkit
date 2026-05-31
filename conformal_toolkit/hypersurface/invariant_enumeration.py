@@ -10,8 +10,10 @@ tensor restricted to Sigma, and the intrinsic Weyl tensor of Sigma.
 KNOWN INCOMPLETENESS at weight 4 (see ERRATA M5). The weight-4 catalogue
 below is a PARTIAL (purely algebraic, leading) basis. It under-counts:
   * it omits the independent algebraic quartic (|L_1|^2)^2, which is
-    distinct from tr(L_1^4) for n >= 4 (their difference is 4abc(a+b+c)
-    in eigenvalues, generically nonzero); and
+    distinct from tr(L_1^4): in eigenvalues their difference is
+    (sum lam_i^2)^2 - sum lam_i^4 = 2 * sum_{i<j} lam_i^2 lam_j^2 > 0
+    whenever L_1 has >= 2 nonzero principal curvatures (e.g. trace-free
+    eigenvalues (1,2,-3) give 196 vs 98); and
   * it omits the tangential-derivative invariants (e.g. |nabla_bar L_1|^2 /
     L_1 . Delta_bar L_1, |div L_1|^2) and the curvature coupling
     J_bar |L_1|^2 that a complete pointwise weight-4 classification carries.

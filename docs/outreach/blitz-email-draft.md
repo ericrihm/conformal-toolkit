@@ -14,7 +14,7 @@ I'm Eric Rihm, a software engineer working at the intersection of differential g
 2. **Research paper** -- Extend the classification computationally to higher-order L_k and use the toolkit to discover new identities or verify conjectured ones. The software can search spaces that are infeasible by hand.
 3. **ML/applications paper** -- I've also built a pipeline that uses conformal invariants as features for graph neural networks, applied to shape analysis. This is a novel bridge between conformal geometry and geometric deep learning -- could be a good fit for an ICML or NeurIPS workshop.
 
-The repo is public with 125 tests and 6 example notebooks:
+The repo is public with 160 tests and 6 example notebooks:
 https://github.com/ericrihm/conformal-toolkit
 
 Notebook 02 directly demonstrates your classification and would be the best place to start.

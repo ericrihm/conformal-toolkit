@@ -173,8 +173,12 @@ below.
 - **Claimed:** `count_invariants(4, ambient_dim=5) = 4` with basis
   `{|L₂|², tr(L₁⁴), W·L₁, |W|²}`, presented as the complete independent set.
 - **Why it's wrong:** the algebraic quartic `(|L₁|²)²` is **independent** of
-  `tr(L₁⁴)` for `n≥4` (their eigenvalue difference is `4abc(a+b+c) ≠ 0`) yet is
-  entirely absent. A complete *pointwise* weight-4 classification also needs the
+  `tr(L₁⁴)`: in eigenvalues `λᵢ` of `L₁`, their difference is
+  `(Σλᵢ²)² − Σλᵢ⁴ = 2·Σ_{i<j} λᵢ²λⱼ²`, which is strictly positive whenever `L₁`
+  has two or more nonzero principal curvatures — e.g. trace-free eigenvalues
+  `(1, 2, −3)` give `(|L₁|²)² = 196` versus `tr(L₁⁴) = 98`. (The two are *not*
+  proportional, so neither can be dropped.) Yet `(|L₁|²)²` is entirely absent
+  from the catalogue. A complete *pointwise* weight-4 classification also needs the
   tangential-derivative invariants (`|∇̄L₁|²` / `L₁·Δ̄L₁`, `|div L₁|²`) and the
   curvature coupling `J̄|L₁|²`. The true count therefore **exceeds 4**.
 - **Status:** `count_invariants` is now documented as a **lower bound**, and the
