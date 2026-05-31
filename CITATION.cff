@@ -1,0 +1,31 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "conformal-toolkit: Symbolic and Discrete Conformal Geometry for SageMath and PyTorch"
+abstract: >-
+  A Python toolkit for computing conformal invariants both symbolically
+  (exact formulas via SageMath/SageManifolds) and discretely (per-vertex mesh
+  features via PyTorch): tractor calculus, GJMS operators, Q-curvature, the
+  conformal fundamental forms and Willmore densities of Blitz-Gover-Waldron,
+  Carroll geometry, and Fefferman-Graham holographic data. The hypersurface
+  module implements the conformal hypersurface invariant theory of Samuel Blitz,
+  A. Rod Gover, and Andrew Waldron.
+type: software
+authors:
+  - family-names: Rihm
+    given-names: Eric
+    email: admin@strata-networks.com
+repository-code: "https://github.com/ericrihm/conformal-toolkit"
+url: "https://github.com/ericrihm/conformal-toolkit"
+license: MIT
+version: 0.1.1
+date-released: "2026-05-31"
+keywords:
+  - conformal geometry
+  - differential geometry
+  - tractor calculus
+  - Q-curvature
+  - GJMS operators
+  - Willmore energy
+  - geometric deep learning
+  - SageMath
+  - PyTorch

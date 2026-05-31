@@ -1,5 +1,5 @@
 """Symbolic conformal geometry toolkit built on SageManifolds."""
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 from conformal_toolkit.core import ConformalStructure
 
