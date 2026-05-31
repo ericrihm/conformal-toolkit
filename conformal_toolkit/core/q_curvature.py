@@ -42,7 +42,9 @@ def _q4(cs):
     # Then trace the remaining contra/covariant pair
     P_norm_sq = P.contract(0, P_up, 0).trace(0, 1)
 
-    n_half = n / 2
-    Q4 = -delta_J - 2 * P_norm_sq + n_half * J * J
+    # Exact rational arithmetic: form n*J*J/2 (Sage object / integer) rather
+    # than the Python float n/2, which would contaminate the symbolic result
+    # when cs.dimension is a Python int (e.g. (n/2) for odd n).
+    Q4 = -delta_J - 2 * P_norm_sq + n * J * J / 2
 
     return Q4
