@@ -58,6 +58,17 @@ def is_bms_symmetry(carroll_struct, vector_field):
     A vector field ξ is a **strict Carroll symmetry** if £_ξ h = 0, and a
     **conformal Carroll symmetry** if £_ξ h = λ h for some scalar λ.
 
+    INCOMPLETE PREDICATE -- necessary but NOT sufficient (see ERRATA M10).
+    A Carroll structure is the PAIR (v, h), so a symmetry must preserve BOTH:
+        strict:    £_ξ h = 0      and  £_ξ v = 0
+        conformal: £_ξ h = 2λ h   and  £_ξ v = -λ v   (Duval-Gibbons-Horvathy)
+    Because h is degenerate (h(v, ·) = 0), the £_ξ h condition places NO
+    constraint on the v-direction, so this routine -- which only tests
+    £_ξ h -- can wrongly accept a ξ that moves v out of ker(h). A correct
+    predicate must ALSO verify £_ξ v ∝ v (strict: = 0; conformal: = -λ v).
+    (The supertranslation generator ξ = f·v built above does satisfy
+    £_ξ v = 0, so it passes; the gap bites for general user input.)
+
     The Lie derivative is computed component-wise:
 
         (£_ξ h)_{ij} = ξ^k ∂_k h_{ij} + h_{kj} ∂_i ξ^k + h_{ik} ∂_j ξ^k

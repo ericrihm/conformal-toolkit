@@ -84,7 +84,7 @@ symbolic conformal geometry to discrete mesh representations usable in PyTorch.
 # Functionality
 
 The software consists of two Python packages, 40 source modules in total, with
-125 tests and 6 example notebooks.
+160 tests and 6 example notebooks.
 
 ## Symbolic Package: `conformal_toolkit`
 

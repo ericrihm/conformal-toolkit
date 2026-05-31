@@ -69,13 +69,10 @@ def conformal_killing_equation(g, X):
     X_flat = X.down(g)           # (0,1): X_b
     nab_X = nabla(X_flat)        # (0,2): ∇_a X_b
 
-    # Symmetrize: ∇_a X_b + ∇_b X_a
-    sym_nab_X = nab_X + nab_X.symmetrize()  # symmetrize() gives (∇_a X_b + ∇_b X_a)/2
-    # Correct: sym_nab_X = nab_X + nab_X.swap_adjacent_indices(0, 1) would swap,
-    # but SageManifolds provides .symmetrize() which averages, so we need 2* it.
-    # Instead: manually build the symmetrized version.
-    # nab_X[a,b] = ∇_a X_b;  we want nab_X[a,b] + nab_X[b,a].
-
+    # Build the symmetrized derivative ∇_a X_b + ∇_b X_a explicitly below.
+    # (An earlier line `nab_X + nab_X.symmetrize()` was both mathematically
+    #  wrong -- it equals (3/2)∇_(a X_b) + (1/2)∇_[a X_b], not ∇_a X_b + ∇_b X_a
+    #  -- and dead code, never used; removed. See ERRATA S1.)
     M = g.domain()
     frame = list(M.frames())[0]
 

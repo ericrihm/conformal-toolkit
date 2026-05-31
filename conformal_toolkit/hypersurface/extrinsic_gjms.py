@@ -18,7 +18,17 @@ def extrinsic_gjms_P2(h, L, f):
 
     P_2(f) = Delta_h(f) + (n/2 - 1) H f
 
-    This is conformally covariant of bi-degree (n/2 - 1, n/2 + 1).
+    WARNING -- NOT conformally covariant as written (see ERRATA M4). Two
+    issues: (1) the zeroth-order term must carry conformal weight -2 (Delta
+    lowers weight by 2), so it must be QUADRATIC in the mean curvature
+    (H^2-type) and/or the intrinsic Schouten trace J_bar -- a term LINEAR in
+    H (weight -1) is weight-inhomogeneous. A correct leading extrinsic
+    conformal Laplacian has the Yamabe-type shape
+    Delta_h f - ((n-2)/2)(J_bar + extrinsic H^2-term) f. (2) The stated
+    bi-degree (n/2 - 1, n/2 + 1) RAISES weight by 2 (target - source = +2),
+    but a second-order Laplacian-type operator LOWERS weight by 2; the
+    standard k=1 conformal-Laplacian bi-degree is (1 - n/2, -1 - n/2)
+    (target - source = -2).
 
     Args:
         h: induced metric on the hypersurface.

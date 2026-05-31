@@ -9,25 +9,31 @@
 
 Two Python packages for computing conformal invariants — geometric quantities unchanged by local stretching — both symbolically (exact formulas via SageMath) and numerically on triangle meshes (GPU-ready via PyTorch). Implements tractor calculus, GJMS operators, Q-curvature, Blitz's conformal fundamental forms, Carroll geometry, and Fefferman-Graham holographic data.
 
+> **This library was independently re-audited for mathematical correctness in May 2026.** Every confirmed error — and exactly how we caught it — is documented in **[ERRATA.md](ERRATA.md)**. We publish the full record on purpose: a teaching tool earns trust by showing its work, mistakes included. See **["Verify it yourself"](#verify-it-yourself)** and **["Contributing corrections"](#contributing-corrections)**.
+
 ---
 
 ## Quick Start
 
-Compute Q-curvature exactly on the round 4-sphere, then verify the discrete approximation converges:
+Compute the Branson Q-curvature exactly on the round 4-sphere, then extract a discrete Willmore feature on a mesh:
 
 ```python
 # Symbolic: exact Q₄ on S⁴ via SageMath
 from conformal_toolkit import ConformalStructure
 cs = ConformalStructure(g_sphere4)
-cs.q_curvature(order=4)  # → 6  (exact, matches 2(n-1)! / ((n/2-1)!)² for n=4)
+cs.q_curvature(order=4)  # → 6   (exact; Branson's Q_n(Sⁿ) = (n-1)! = 3! = 6)
 
-# Discrete: Q₄ on an icosphere mesh via PyTorch
+# Discrete: a 4th-order surface feature on an icosphere mesh via PyTorch.
+# NOTE: this returns the Willmore integrand H² − K, NOT the 4D GJMS Q₄
+# (a 2-surface quantity cannot reproduce the 4-manifold value 6 — see ERRATA M15/M16).
 from conformal_features.discrete.q_curvature import discrete_q_curvature
 Q4 = discrete_q_curvature(vertices, faces, order=4)
-Q4.mean()  # → 5.94  (converges to 6 as mesh refines)
+Q4.mean()  # → 0   (H² − K vanishes on a round sphere of any radius; → 0 under refinement)
 ```
 
-One toolkit, two representations of the same invariant — symbolic formulas ground-truth the discrete features.
+The symbolic formulas ground-truth the geometry; the discrete features are
+mesh-domain analogues — *not* always the same number, and the docs now say which
+is which.
 
 ---
 
@@ -153,7 +159,7 @@ The 10 features per vertex:
 | 0 | Conformal factor | Conformal | From discrete Yamabe flow |
 | 1 | Willmore density | Conformal | H² (distance from minimality) |
 | 2 | Q₂ | Conformal | Discrete scalar curvature 2K |
-| 3 | Q₄ | Conformal | Higher-order curvature |
+| 3 | Willmore density H²−K | Conformal (integral) | 4th-order surface feature — the Willmore integrand, *not* the 4D GJMS Q₄ ([ERRATA M15](ERRATA.md)) |
 | 4 | Bach norm | Conformal | Bi-Laplacian proxy for non-conformal-flatness |
 | 5–6 | Cross-ratio stats | Möbius | Edge cross-ratio mean and variance |
 | 7 | Gaussian curvature | Isometric | Intrinsic curvature K |
@@ -240,7 +246,7 @@ conformal-toolkit/
 │   ├── discrete/               # Curvature, Q, Bach, Willmore, cross-ratios, Yamabe, spectral
 │   ├── features/               # mesh_conformal_features() pipeline
 │   └── benchmarks/             # ShapeNet, SHREC, FAUST evaluation (WIP)
-├── tests/                      # 157 tests across both packages
+├── tests/                      # 160 tests across both packages
 ├── examples/                   # 6 Jupyter notebooks
 └── paper.md                    # JOSS paper draft
 ```
@@ -273,7 +279,7 @@ conformal-toolkit/
 | `export` | `conformal_feature_vector(cs)` | Dict of all invariants at a point |
 | | `tensor_to_numpy(T)` | SageMath tensor → NumPy array |
 
-†P₆ computes the leading term (−Δ³) only; exact on conformally flat metrics. Obstruction at n=6 is a leading-order approximation.
+†P₆ computes the leading term (+Δ³) only; exact on conformally flat metrics. Obstruction at n=6 is a leading-order approximation (the Graham–Hirachi normalization constant is not applied — see [ERRATA m3](ERRATA.md)).
 
 ### conformal_features (PyTorch)
 
@@ -341,6 +347,66 @@ Feature extraction and model architectures are implemented; dataset integration 
 # Run discrete tests (PyTorch only, no SageMath needed)
 pytest tests/test_discrete/ tests/test_features/ -v
 ```
+
+---
+
+## Verify it yourself
+
+Don't take our word for any formula — the whole point of a symbolic toolkit is
+that you can check it. Every correction in [ERRATA.md](ERRATA.md) was caught by
+evaluating a claim on a geometry where the answer is known in closed form. Here
+are the anchors we use; copy them into a Sage session and confirm:
+
+```python
+from sage.all import Manifold, sin
+from conformal_toolkit import ConformalStructure
+
+# --- Anchor 1: the round 4-sphere, where Branson's Q_n(Sⁿ) = (n-1)! ---
+# On Sⁿ (sectional curvature 1):  Ric = (n-1)g,  R = n(n-1),
+#   Schouten P = ½g,  J = tr P = n/2,  so  Q₄ = -ΔJ - 2|P|² + (n/2)J² = 6.
+cs = ConformalStructure(g_sphere4)
+assert cs.q_curvature(order=4) == 6          # = (4-1)! = 3!  (ERRATA M1)
+
+# --- Anchor 2: the conformal Laplacian carries a curvature term ---
+# P₂ f = Δf - (n-2)/(4(n-1)) R f.  The R-term is NOT optional for n > 2.
+# On S⁴ its coefficient is n(n-2)/4 = 2, never zero.  (ERRATA M2)
+
+# --- Anchor 3: Fefferman-Graham on the hyperbolic filling of Sⁿ ---
+# g_ρ = (1 - ρ²/4)² g₀  ⟹  g₂ = -½ g₀  and  g₄ = 1/16 g₀ exactly.  (ERRATA C1/M11)
+
+# --- Anchor 4 (discrete, PyTorch only): validate on a NON-constant field ---
+# The cotangent Laplacian L is a *stiffness* matrix; for f = x² on a flat mesh,
+# (L f)_i = -2·A_i  while  (M⁻¹ L f)_i = -2  recovers the pointwise Laplacian.
+# "It vanishes on a sphere" is a false positive — constants are annihilated by
+# any linear operator.  (ERRATA M17)
+```
+
+The method generalizes: **reduce a tensor claim to a scalar on a known geometry,
+and check conformal weights as a free checksum.** That single discipline caught
+most of the errata.
+
+---
+
+## Contributing corrections
+
+We would rather be corrected than be wrong, and this repository is built to make
+that easy. **Finding an error we missed is the system working — please send it.**
+
+1. Open an issue titled `Errata: <one-line claim>`.
+2. Give the counter-evidence the way we give ours: a *concrete geometry* (a
+   sphere radius, a flat patch, an explicit metric) on which the claim returns
+   the wrong number, or a *conformal-weight* argument that the terms can't match.
+   A failing check on a named anchor metric is the gold standard.
+3. Propose the corrected formula, stating your normalization convention (Branson
+   vs. analyst signs differ — half of conformal geometry's "errors" are
+   convention clashes), with a reference if you have one.
+4. If you can, add a regression test under `tests/` pinning the right value on
+   the anchor. *Verified-on-an-anchor beats argued-in-prose.*
+
+Open problems where we explicitly want help are listed at the end of
+[ERRATA.md](ERRATA.md) — the complete weight-4 hypersurface invariant basis
+(`M5`), the Fialkow/Weyl terms in `L₂` (`M7`), the full extrinsic `Q₄` (`M8`),
+and the FG `g₄` Bach differential terms (`C1`).
 
 ---
 

@@ -6,6 +6,16 @@ Invariants are organised by *weight* (order in derivatives of the embedding).
 At each weight, the independent scalar invariants are formed from
 contractions of the conformal fundamental forms L_k, the ambient Weyl
 tensor restricted to Sigma, and the intrinsic Weyl tensor of Sigma.
+
+KNOWN INCOMPLETENESS at weight 4 (see ERRATA M5). The weight-4 catalogue
+below is a PARTIAL (purely algebraic, leading) basis. It under-counts:
+  * it omits the independent algebraic quartic (|L_1|^2)^2, which is
+    distinct from tr(L_1^4) for n >= 4 (their difference is 4abc(a+b+c)
+    in eigenvalues, generically nonzero); and
+  * it omits the tangential-derivative invariants (e.g. |nabla_bar L_1|^2 /
+    L_1 . Delta_bar L_1, |div L_1|^2) and the curvature coupling
+    J_bar |L_1|^2 that a complete pointwise weight-4 classification carries.
+So count_invariants(order=4, ...) is a LOWER BOUND, not the exact count.
 """
 
 
@@ -71,7 +81,15 @@ def _filter_by_dimension(invariants, ambient_dim):
         # Weyl-based invariants vanish identically when ambient_dim <= 3
         if 'W_' in inv['name'] and ambient_dim <= 3:
             continue
-        # In ambient 4D the Weyl is self-dual, |W_{nabc}|^2 is dependent
+        # PROVISIONAL, UNVERIFIED (ERRATA M6): |W_{nabc}|^2 is dropped at
+        # ambient_dim == 4. The ORIGINAL justification ("the Weyl is
+        # self-dual") was mathematically FALSE -- a generic 4-manifold has
+        # both W^+ and W^- nonzero and independent, and even W^- = 0 would
+        # not make the scalar |W_{nabc}|^2 expressible via the other listed
+        # invariants. We have NOT established a genuine algebraic dependence
+        # here, so this drop (and hence count_invariants(4, 4)) is an
+        # unverified placeholder, not a proven count. Contributors: please
+        # supply a real identity or remove the drop. See ERRATA M6.
         if inv['name'] == '|W_{nabc}|^2' and ambient_dim == 4:
             continue
         filtered.append(inv)

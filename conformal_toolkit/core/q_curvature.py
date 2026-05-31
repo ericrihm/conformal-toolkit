@@ -2,6 +2,16 @@
 
 Q_2 = R (scalar curvature)
 Q_4 = -Delta(J) - 2|P|^2 + (n/2) J^2
+
+NORMALIZATION CAVEAT (ERRATA m1). This module returns Q_2 = R, whereas Q_4
+follows the Branson normalization (Q_4 = (n-1)! = 6 on the round S^4). Those
+two conventions are inconsistent ACROSS ORDERS: the Branson-normalized Q_2
+is R/2 (= Gaussian curvature K = 1 = (2-1)! on S^2), not R (= 2). Both
+Q_2 = R and Q_2 = R/2 appear in the literature, so this is a convention
+choice rather than an arithmetic error -- but a user mixing Q_2 and Q_4
+should be aware they differ by a factor of 2 in normalization. Q_4 here is
+the general-n Branson Q-curvature (it carries (n/2)J^2, not 2J^2; the two
+coincide only at n=4).
 """
 from conformal_toolkit.core.helpers import laplacian, tensor_norm_squared
 

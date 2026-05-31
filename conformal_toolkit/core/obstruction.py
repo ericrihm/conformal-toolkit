@@ -11,9 +11,17 @@ def _obstruction_6(cs):
     """Obstruction tensor in dimension 6 (leading-order approximation).
 
     Computes Delta(Bach)_{ab} = g^{cd} nabla_c nabla_d B_{ab} as the
-    dominant contribution to the 6-dimensional obstruction tensor.
-    The full O_6 involves additional cubic-in-curvature terms; on
-    conformally flat metrics all such terms vanish and this is exact.
+    leading (principal-part) contribution to the 6-dimensional obstruction
+    tensor.
+
+    Caveats (see ERRATA m3):
+    * The overall Graham-Hirachi normalization constant c in
+      O_6 = c * Delta(Bach) + (curvature-squared corrections) is NOT applied
+      here -- this routine returns the unnormalized Delta(Bach).
+    * The full O_6 carries additional quadratic/cubic-in-curvature terms,
+      omitted here. On conformally flat metrics every term (including
+      Delta(Bach), since Bach = 0) vanishes, so "exact on conformally flat"
+      reduces to the vacuous 0 = 0 and does NOT validate the normalization.
 
     Parameters
     ----------
