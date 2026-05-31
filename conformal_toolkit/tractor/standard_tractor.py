@@ -5,10 +5,15 @@ manifold is, in a conformal scale (metric representative g), a triple:
 
     I^A = (sigma, mu_a, rho)
 
-where:
-- sigma is a scalar field (conformal weight +1 density)
-- mu_a is a 1-form (conformal weight -1)
-- rho is a scalar field (conformal weight -1)
+where, in the composition series E[1] -> E_a[1] -> E[-1]:
+- sigma is a scalar field   (conformal density weight +1, in E[1])
+- mu_a is a weighted 1-form  (conformal density weight +1, in E_a[1])
+- rho is a scalar field     (conformal density weight -1, in E[-1])
+
+(The middle slot mu_a carries weight +1, NOT -1: the file's own
+tractor_metric.py contracts g^{ab} mu_a mu'_b alongside sigma*rho', and
+homogeneity of that pairing forces w(mu) = +1. The earlier "-1" label was
+a copy-paste from the rho slot -- see ERRATA m4.)
 """
 
 
@@ -41,7 +46,7 @@ class StandardTractor:
 
     @property
     def mu(self):
-        """Middle slot: 1-form (weight -1)."""
+        """Middle slot: weighted 1-form (density weight +1; see ERRATA m4)."""
         return self._mu
 
     @property

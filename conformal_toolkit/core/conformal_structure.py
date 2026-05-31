@@ -82,9 +82,21 @@ class ConformalStructure:
         return self._g.ricci_scalar()
 
     def bach(self):
-        """Bach tensor B_ab = nabla^c nabla^d W_{acbd} + P^{cd} W_{acbd} (cached).
+        """Bach tensor (cached).
 
-        Vanishes in dimension 4 iff the metric is locally conformally Einstein.
+        Computed (in bach.py) via the Cotton form, valid for all n:
+
+            B_ab = nabla^c C_{cab} + P^{cd} W_{cadb}
+
+        Note: the Weyl-divergence form B_ab = (1/(n-3)) nabla^c nabla^d
+        W_{acbd} + P^{cd} W_{acbd} carries a 1/(n-3) factor, since the second
+        Bianchi identity gives nabla^c W_{cabd} = (n-3) C_{abd}; the two
+        forms agree only at n=4 (where 1/(n-3)=1). An earlier docstring
+        dropped that factor -- see ERRATA m2.
+
+        The Bach tensor is conformally invariant (and the obstruction tensor)
+        only in dimension 4, where it vanishes iff the metric is locally
+        conformally Einstein.
         """
         if self._bach is None:
             from conformal_toolkit.core.bach import compute_bach

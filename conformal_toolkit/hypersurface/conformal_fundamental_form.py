@@ -64,7 +64,7 @@ def conformal_fundamental_form_L1(h, L):
 def conformal_fundamental_form_L2(h, L, nabla_n_L1=None):
     """Second conformal fundamental form.
 
-    Full formula:
+    Formula (CONFORMALLY-FLAT-AMBIENT reduction):
         L_2_{ab} = (nabla_n L_1)_{ab} + (L_1)_a^c (L_1)_{cb}
                    - (1/n)|L_1|^2 h_{ab}
 
@@ -72,6 +72,14 @@ def conformal_fundamental_form_L2(h, L, nabla_n_L1=None):
     only the algebraic (tangential) part is returned:
 
         L_2^{alg}_{ab} = (L_1)_a^c (L_1)_{cb} - (1/n)|L_1|^2 h_{ab}
+
+    WARNING -- INCOMPLETE on a general ambient (see ERRATA M7). The genuine
+    conformal fundamental form at this order is the trace-free FIALKOW
+    tensor (Blitz-Gover-Waldron, arXiv:2107.10381), which necessarily
+    contains ambient curvature (Weyl/Cotton, e.g. W_{n(ab)n}) terms. The
+    expression above carries NO Weyl/Cotton term, so it is conformally
+    invariant only when the ambient is (locally) conformally flat; on a
+    generic ambient it is the conformally-flat reduction, not L_2.
 
     Args:
         h: induced metric on the hypersurface.

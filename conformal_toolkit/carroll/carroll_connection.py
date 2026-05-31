@@ -1,15 +1,23 @@
 """Carroll connection: Christoffel-like symbols adapted to a Carroll structure.
 
-For a Carroll manifold with adapted coordinates (t, x^i) where v = ∂_t, the
-Carroll connection has the block structure:
+For a Carroll manifold with adapted coordinates (t, x^i) where v = ∂_t, this
+module uses the block structure:
 
     Γ^t_{μν} = 0   (all)
     Γ^i_{tt} = 0
     Γ^i_{tj} = 0
     Γ^i_{jk} = spatial Christoffel symbols from h_{jk}
 
-The spatial Christoffel symbols are the Levi-Civita symbols of the restriction
-of h to the spatial leaves (where h is non-degenerate).
+SCOPE CAVEAT (see ERRATA M9). Carrollian connections are NOT unique (h is
+degenerate), and the choice Γ^i_{tj} = 0 is correct ONLY when the Carroll
+"electric field" E_{ij} = (1/2)(£_v h)_{ij} vanishes -- i.e. when the spatial
+metric is time-independent (∂_t h_{ij} = 0). When ∂_t h_{ij} ≠ 0, metric
+compatibility ∇h = 0 forces Γ^k_{t(i} h_{j)k} = (1/2) ∂_t h_{ij} ≠ 0, so the
+correct symmetric part is Γ^i_{(tj)} = -(1/2) h^{ik}(£_v h)_{kj}. This module
+otherwise computes a generically NONZERO carroll_electric_field, so presenting
+Γ^i_{tj} = 0 as THE Carroll connection is internally inconsistent in the
+time-dependent case. Treat the symbols below as the preserved-h
+(£_v h = 0) representative.
 """
 
 from sage.all import SR

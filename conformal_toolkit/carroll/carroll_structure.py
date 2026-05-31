@@ -58,12 +58,21 @@ class CarrollStructure:
         """Check the Carroll compatibility condition h(v, ·) = 0.
 
         Contracts h with v on its first slot and verifies that all components
-        of the resulting 1-form vanish symbolically.
+        of the resulting 1-form vanish symbolically. Also checks that the
+        spatial metric h has rank n (a 1-dimensional kernel spanned by v),
+        as required by the definition of a Carroll structure.
+
+        INCOMPLETENESS NOTE (ERRATA m5): the original check verified only
+        h(v, ·) = 0 and NOT rank(h) = n, so a fully-zero h or any
+        rank-deficient h (kernel dimension > 1) passed validation despite
+        the "rank-n degenerate" definition. The rank check below closes that
+        gap (downstream spatial_christoffel also implicitly needs the spatial
+        block invertible).
 
         Returns
         -------
         bool
-            True if v lies in the kernel of h, False otherwise.
+            True if v lies in the kernel of h and rank(h) = n, else False.
         """
         h = self._h
         v = self._v
@@ -85,6 +94,17 @@ class CarrollStructure:
             except Exception:
                 if not bool(val == 0):
                     return False
+
+        # Rank check: h must be degenerate of rank exactly n = dim - 1
+        # (kernel = span(v), one-dimensional). See ERRATA m5.
+        from sage.all import matrix, SR
+        h_mat = matrix(SR, self._dim, self._dim)
+        for a in range(self._dim):
+            for b in range(self._dim):
+                comp = h[frame, a, b]
+                h_mat[a, b] = comp.expr() if hasattr(comp, 'expr') else SR(comp)
+        if h_mat.rank() != self._dim - 1:
+            return False
         return True
 
     # ------------------------------------------------------------------

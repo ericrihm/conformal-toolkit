@@ -26,10 +26,17 @@ def holographic_stress_tensor(g0, n):
     T = n * g_n + (lower order trace terms).
     At leading non-trivial order: T = n * g_2 = -n * P(g_0).
 
-    For n=3 (AdS4/CFT3) the trace anomaly is absent and:
-        T_{ab} = -3 * P_{ab} + (3/2) * J * (g_0)_{ab}
+    For n=3 (AdS4/CFT3) the trace anomaly is absent, so any *local*
+    placeholder must be trace-free. The trace-free combination is
 
-    where J = trace(P) = R/(2*(n-1)).
+        T_{ab} = -3 * P_{ab} + J * (g_0)_{ab}      (tr T = -3J + J*3 = 0)
+
+    where J = trace(P) = R/(2*(n-1)). The earlier coefficient (3/2)*J gave
+    tr T = (3/2)J != 0, contradicting the stated absence of an anomaly (see
+    ERRATA M13). NOTE: the genuine n=3 holographic stress tensor is
+    T_{ij} = 3 g_{(3)ij}, which is undetermined *non-local* VEV data (free
+    boundary condition), not any local function of P -- this branch returns
+    only a trace-consistent local placeholder.
 
     For general n the holographic stress tensor at leading order is:
         T_{ab} = -n * P_{ab}
@@ -49,7 +56,7 @@ def holographic_stress_tensor(g0, n):
     J = schouten_trace(g0)
 
     if n == 3:
-        T = -3 * P + (3 / 2) * J * g0
+        T = -3 * P + J * g0   # trace-free local placeholder; see ERRATA M13
     else:
         T = -n * P
 

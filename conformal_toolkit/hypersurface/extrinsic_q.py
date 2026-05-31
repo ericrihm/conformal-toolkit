@@ -31,8 +31,23 @@ def extrinsic_q2(h, L):
 def extrinsic_q4(h, L, nabla_n_L1=None):
     """Extrinsic Q-curvature of order 4.
 
-    Simplified formula (ignoring ambient curvature corrections):
-        q_4 = -Delta_h(H) + H |L_1|^2 + (n/2 - 1) H^3
+    WARNING -- INCOMPLETE (see ERRATA M8). This returns only the purely
+    extrinsic, conformally-flat-ambient piece
+
+        q_4 = -Delta_h(H) + H |L_1|^2 + (n/2 - 1) H^3,
+
+    which OMITS the intrinsic fourth-order term. The genuine extrinsic Q_4 is
+
+        q_4 = Q_4^Sigma + (extrinsic couplings),
+        Q_4^Sigma = -Delta_bar J_bar - 2|P_bar|^2 + (n/2) J_bar^2,
+
+    plus the leading second-derivative coupling ~ (1/2) L_1 . Delta_bar L_1.
+    Failing anchor: on the round S^4 (umbilic: L_1 = 0, H = 1) this routine
+    returns 0 + 0 + (n/2-1) = 1, whereas the correct value must reduce to the
+    intrinsic Branson Q_4 = (n-1)! = 6. Use for the umbilic-deviation
+    (Willmore-type) content only, not as the true extrinsic Q_4.
+    (Also: the module header writes +Delta_h H but the implementation uses
+    -Delta_h H; the implementation's sign is kept.)
 
     where Delta_h is the Laplace-Beltrami operator on (Sigma, h).
 

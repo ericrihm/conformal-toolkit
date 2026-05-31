@@ -1,16 +1,32 @@
 """GJMS operators (Graham-Jenne-Mason-Sparling).
 
-P_2 = Delta (Laplacian)
+P_2 = conformal (Yamabe) Laplacian = Delta - ((n-2)/(4(n-1))) R
 P_4 = Paneitz operator = Delta^2 + div(V . d) + ((n-4)/2) Q_4
 
 where V_ab = (n-2) J g_ab - 4 P_ab.
+
+Sign convention: Delta = nabla^a nabla_a (geometer / non-negative-spectrum
+on a compact manifold is for -Delta). The GJMS principal part is +Delta^k.
 """
 from conformal_toolkit.core.helpers import laplacian, divergence
 
 
 def laplacian_operator(cs, f):
-    """P_2(f) = Delta(f) = nabla^a nabla_a f."""
-    return laplacian(cs.connection(), cs.metric, f)
+    """P_2(f): the *conformal* (Yamabe) Laplacian, not the bare Laplacian.
+
+        P_2(f) = Delta(f) - ((n-2)/(4(n-1))) R f
+
+    The scalar-curvature term is exactly what makes P_2 conformally
+    covariant (weight (2-n)/2 -> (-2-n)/2) for n > 2; it vanishes only at
+    n = 2. Omitting it (the original bug) breaks conformal covariance for
+    every n > 2 -- see ERRATA M2.
+    """
+    n = cs.dimension
+    R = cs.ricci_scalar()
+    delta_f = laplacian(cs.connection(), cs.metric, f)
+    if n == 2:
+        return delta_f
+    return delta_f - ((n - 2) / (4 * (n - 1))) * R * f
 
 
 def paneitz_operator(cs, f):
@@ -40,10 +56,16 @@ def paneitz_operator(cs, f):
 def p6_operator(cs, f):
     """P_6(f): sixth-order GJMS operator (leading-order approximation).
 
-    Computes (-1)^3 Delta^3(f) = -Delta^3(f), which equals P_6(f) for
-    conformally flat metrics.  On general curved backgrounds this captures
-    the principal symbol but omits lower-order curvature coupling terms
-    (Schouten, Cotton, and Weyl contributions).
+    Computes +Delta^3(f) (the GJMS principal part is +Delta^k in the
+    geometer sign convention Delta = nabla^a nabla_a used throughout this
+    package), which equals P_6(f) for conformally flat metrics.  On general
+    curved backgrounds this captures the principal symbol but omits the
+    lower-order curvature coupling terms (Schouten, Cotton, and Weyl
+    contributions).
+
+    Note: an earlier docstring claimed this returns -Delta^3; that was a
+    sign error from mixing the analyst convention (Delta = -nabla^a nabla_a)
+    with the geometer Laplacian the code actually applies -- see ERRATA M3.
 
     Parameters
     ----------
