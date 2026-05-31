@@ -350,6 +350,48 @@ pytest tests/test_discrete/ tests/test_features/ -v
 
 ---
 
+## How it's tested — and a SageMath-on-CI recipe you can borrow
+
+This project has an unusual split that makes a nice teaching example. **SageMath**
+is a large open-source mathematics system (a Python-based computer-algebra system
+bundling [SageManifolds](https://sagemanifolds.obspm.fr/) for exact tensor
+calculus) — it is *not* a `pip install`, it is a whole math environment. PyTorch,
+by contrast, is an ordinary pip package. So the test suite runs on **two tracks**:
+
+| Track | Needs | Runs | What it checks |
+|-------|-------|------|----------------|
+| **A — symbolic** | SageMath 10.x | `tests/test_core, test_tractor, test_hypersurface, test_carroll, test_pe` | exact conformal-geometry formulas |
+| **B — discrete** | PyTorch (pip) | `tests/test_discrete, test_features` | mesh features on triangle meshes |
+
+Every push and pull request runs **both** automatically on GitHub Actions
+([`.github/workflows/test.yml`](.github/workflows/test.yml)) — so the symbolic
+formulas in this README are re-verified by a real SageMath install in the cloud,
+not just asserted. (You can watch it: the green check on a commit means Track A
+recomputed things like `Q₄(S⁴)=6` from scratch.)
+
+The part worth stealing if you're learning SageMath: **how to get Sage into CI.**
+Sage has no usable pip wheel, but it *is* on conda-forge, so the trick is to
+provision it with [micromamba](https://github.com/mamba-org/setup-micromamba) and
+run `pytest` *inside* the Sage Python:
+
+```yaml
+# .github/workflows/test.yml — Track A (SageMath)
+- uses: mamba-org/setup-micromamba@v2
+  with:
+    environment-name: sage
+    create-args: sage python=3.11 pytest   # Sage from conda-forge, ~one cached step
+    channels: conda-forge
+- run: micromamba run -n sage sage -python -m pytest tests/test_core/ -v
+#        └ run pytest with Sage's OWN python, so `from sage.all import …` works
+```
+
+That `sage -python -m pytest` is the key idea: Sage ships its own Python
+interpreter, and your tests must run under it. Locally, `./sage-run.sh test`
+does the same thing — auto-detecting a native [micromamba](https://github.com/mamba-org/micromamba-releases)
+env (fastest on Apple Silicon) or falling back to the SageMath Docker image.
+
+---
+
 ## Verify it yourself
 
 Don't take our word for any formula — the whole point of a symbolic toolkit is
