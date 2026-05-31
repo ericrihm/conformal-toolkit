@@ -77,18 +77,28 @@ hypersurface count (`M5`) could only be bounded below (`> 4`), not pinned.
 returning an independent generating set (algebraic + derivative invariants).
 Hard, but it is what makes `count_invariants` checkable exactly.
 
-## Gap 5 — No library-execution harness in CI *(P1, highest ROI after backends)*
+## Gap 5 — Library-execution harness in CI *(P1 — ✅ LARGELY ADDRESSED)*
 
-We could not run the repo's own Sage code, so prose-vs-return mismatches went
-unverified (does `q_curvature(order=4)` literally return 6? does
-`count_invariants` return the stated ints?).
+Original problem: we could not run the repo's own Sage code, so prose-vs-return
+mismatches went unverified, and the *critical* fixes were witnessed only by
+hand-derivation.
 
-**Proposal — a Sage-enabled CI job** that evaluates each operator on canonical
-anchors — round `Sⁿ`, `S²×S²`, **and a non-conformally-flat metric** — and
-asserts known values (Branson `Q_n=(n−1)!`, conformal invariance / vanishing).
-This catches `M2`, `M8`, `C1`/`C2`, `M16` **empirically, with no symbolic engine
-at all.** The anchor library is already specified in `ERRATA.md → How we caught
-them`; turning it into `tests/test_anchors/` is the concrete first deliverable.
+**Done.** The repo's GitHub Actions already provisions SageMath (Track A) and
+runs the symbolic suite on every push. `tests/test_pe/test_critical_anchors.py`
+now turns the audit anchors into automated regression tests on discriminating
+geometries:
+- round **S³** (n≠4, where the bug's wrong n-dependence no longer coincides with
+  the correct value): asserts `v₂ = −3/4` (C2), Fefferman–Graham `g₄ = 1/16 g₀`
+  (C1), `Q₄ = 15/8`;
+- non-Einstein **S²(1)×S²(2)**: asserts Schouten `P[0,0]=7/24, P[2,2]=−1/3`,
+  `J=5/12`, the conformal Laplacian `P₂(1)=−5/12` (isolating the curvature term,
+  M2), and `Bach≠0` — the regime an Einstein/Ricci-flat metric would mask.
+
+So C1, C2, and M2 are now re-proven by CI every push. **Remaining:** add a
+higher even-dimensional sphere (S⁶) cross-check, and anchors for the
+research-level items (`M8` extrinsic Q₄ once implemented, `C1`'s Bach
+differential terms). The discriminating-anchor pattern and the exact closed
+forms are documented in `ERRATA.md → How we caught them`.
 
 ## Gap 6 — Literature retrieval isn't citation-grade *(P3)*
 
@@ -108,13 +118,13 @@ rendered PDF) and indexes numbered equations for verbatim citation lookup.
 |-----|----------|--------|---------|
 | Backend healthcheck + Wolfram key | **P0** | Low | the silent-degradation risk itself |
 | Tensor / abstract-index verifier | **P0** | High | `M2`, `M3`, `M8`, `M12`, `C1`, `M11` |
-| Library-execution CI harness | **P1** | Low–Med | `M2`, `M8`, `C1`, `C2`, `M16` (empirically) |
+| Library-execution CI harness | ✅ **done** | Low–Med | `M2`, `C1`, `C2` re-proven in CI (S³ + non-Einstein S²×S²) |
 | Conformal-weight checker | **P1** | Low | `M4`, `M9`, `m4` |
 | Degenerate-metric / Carroll engine | **P2** | Med | `M9`, `M10`, `m5` |
 | Invariant-basis enumerator | **P2** | High | `M5`, `M6` |
 | arXiv source fetcher | **P3** | Low | `M5`, `M7`, `m3` |
 
-**Do first:** the backend healthcheck (P0) and the library-execution CI harness
-(P1). Together they are low-effort and would have caught the two *critical*
+**Do first:** the backend healthcheck (P0). The library-execution CI harness
+(P1) is now ✅ in place for the critical fixes (C1/C2/M2). Together they are low-effort and would have caught the two *critical*
 errors and most majors automatically — the highest return per hour of the whole
 list.

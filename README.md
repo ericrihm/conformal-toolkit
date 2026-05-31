@@ -246,7 +246,7 @@ conformal-toolkit/
 │   ├── discrete/               # Curvature, Q, Bach, Willmore, cross-ratios, Yamabe, spectral
 │   ├── features/               # mesh_conformal_features() pipeline
 │   └── benchmarks/             # ShapeNet, SHREC, FAUST evaluation (WIP)
-├── tests/                      # 160 tests across both packages
+├── tests/                      # 167 tests across both packages
 ├── examples/                   # 6 Jupyter notebooks
 └── paper.md                    # JOSS paper draft
 ```
@@ -367,7 +367,13 @@ Every push and pull request runs **both** automatically on GitHub Actions
 ([`.github/workflows/test.yml`](.github/workflows/test.yml)) — so the symbolic
 formulas in this README are re-verified by a real SageMath install in the cloud,
 not just asserted. (You can watch it: the green check on a commit means Track A
-recomputed things like `Q₄(S⁴)=6` from scratch.)
+recomputed things like `Q₄(S⁴)=6` from scratch.) In particular,
+`tests/test_pe/test_critical_anchors.py` re-proves the audit's *critical* fixes
+on geometries chosen to expose them — the round S³ (where the corrected
+Fefferman–Graham `g₄=1/16 g₀` and renormalized volume `v₂=−J/2` differ from the
+old buggy formulas, which only agreed at n=4) and the **non-Einstein** product
+S²(1)×S²(2) (where Bach≠0 and the conformal Laplacian's curvature term is
+nonzero, unlike the Ricci-flat/Einstein metrics that would mask those bugs).
 
 The part worth stealing if you're learning SageMath: **how to get Sage into CI.**
 Sage has no usable pip wheel, but it *is* on conda-forge, so the trick is to
